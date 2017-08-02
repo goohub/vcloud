@@ -6,40 +6,47 @@ import (
 )
 
 type Host struct {
-	id              int
-	vmList          []instance.Vm
-	mipsProvisioner *tracker.MipsProvisioner
-	ramProvisioner  *tracker.RamProvisioner
-	bwProvisioner   *tracker.BwProvisioner
-	utilization     float64
+	id          int
+	vmList      []instance.Vm
+	mipsTracker tracker.MipsTracker
+	ramTracker  tracker.RamTracker
+	bwTracker   tracker.BwTracker
+	utilization float64
+}
+
+func New(
+	id int,
+	vmList []instance.Vm,
+	mipsProvisioner tracker.MipsTracker,
+	ramProvisioner tracker.RamTracker,
+	bwProvisioner tracker.BwTracker,
+	utilization float64) *Host {
+	return &Host{
+		id,
+		vmList,
+		mipsProvisioner,
+		ramProvisioner,
+		bwProvisioner,
+		utilization,
+	}
 }
 
 func (host *Host) LaunchInstance(vm instance.Vm) {
-	host.mipsProvisioner.Allocate(vm.GetId(), vm.GetMips())
-	host.ramProvisioner.Allocate(vm.GetId(), vm.GetRam())
-	host.bwProvisioner.Allocate(vm.GetId(), vm.GetBw())
+	host.mipsTracker.Allocate(vm.GetId(), vm.GetMips())
+	host.ramTracker.Allocate(vm.GetId(), vm.GetRam())
+	host.bwTracker.Allocate(vm.GetId(), vm.GetBw())
 }
 
 func (host *Host) Claim(vm instance.Vm) bool {
-	return host.mipsProvisioner.Claim(vm.GetMips()) &&
-		host.ramProvisioner.Claim(vm.GetRam()) &&
-		host.bwProvisioner.Claim(vm.GetBw())
-}
-
-func (host *Host) SetProvider(vmMipsProvider *tracker.MipsProvisioner, vmRamProvider *tracker.RamProvisioner, vmBwProvider *tracker.BwProvisioner) {
-	host.mipsProvisioner = vmMipsProvider
-	host.ramProvisioner = vmRamProvider
-	host.bwProvisioner = vmBwProvider
+	return host.mipsTracker.Claim(vm.GetMips()) &&
+		host.ramTracker.Claim(vm.GetRam()) &&
+		host.bwTracker.Claim(vm.GetBw())
 }
 
 func (host *Host) GetVms() []instance.Vm {
 	return host.vmList
 }
 
-func (host *Host) GetId()int{
+func (host *Host) GetId() int {
 	return host.id
-}
-
-func (host *Host) SetId(id int) {
-	host.id = id
 }

@@ -1,46 +1,40 @@
 package core
 
 import (
+	"github.com/wujunwei/vcloud/cmd/options"
 	"github.com/wujunwei/vcloud/entity/plugins"
+	"github.com/wujunwei/vcloud/entity/resource"
 	"github.com/wujunwei/vcloud/entity/resource/instance"
-	"github.com/wujunwei/vcloud/pkg/factory"
-	"github.com/wujunwei/vcloud/pkg/policy"
 )
 
-type Cluster struct {
-	Datacenter Datacenter
-	Broker     Broker
+type Cluster interface {
+	Run()
 }
 
-func (clt *Cluster) Init() {
-	clt.loadResources()
-	clt.loadScheduler()
+type cluster struct {
+	Broker     *broker
+	Datacenter *datacenter
 }
 
-func (clt *Cluster) loadResources() {
-	cfgpath := "github.com/wujunwei/vcloud/cmd/config/config.ini"
+func New(cfg *options.RuntimeConfig) Cluster {
+	containers := cfg.ResourceFactory.PullInstance(&instance.Container{}).([]*instance.Container)
+	vms := cfg.ResourceFactory.PullInstance(&instance.Vm{}).([]*instance.Vm)
+	hosts := cfg.ResourceFactory.PullInstance(&resource.Host{}).([]*resource.Host)
 
-	resourceFactory := factory.New()
+	schedulers := cfg.Scheduler.SchedulerFor()
+	vmScheduler := schedulers["vmScheduler"].(plugins.VmScheduler)
+	containerScheduler := schedulers["containerScheduler"].(plugins.ContainerScheduler)
 
-	resourceFactory.Core().Container().InstanceFor(cfgpath)
-	resourceFactory.Core().Vm().InstanceFor(cfgpath)
-	resourceFactory.Core().Host().InstanceFor(cfgpath)
+	broker := NewBroker(vms, containers, 0, 0)
+	datacenter := NewDatacenter(hosts, nil, nil, vmScheduler, containerScheduler)
 
-	clt.Broker.SetContainers(resourceFactory.PullInstance(&instance.Container{}))
-	clt.Broker.SetVms(resourceFactory.PullInstance(&instance.Vm{}))
-
-	clt.Datacenter.SetHosts(hostfactory.GenerateHostFromFile(cfgpath))
+	return &cluster{
+		broker,
+		datacenter,
+	}
 }
 
-func (clt *Cluster) loadScheduler() {
-	s := &policy.Scheduler{}
-	s.InitDefaultScheduler()
-	sche := s.GetScheduler()
-	clt.Datacenter.SetContainerScheduler(sche["containerScheduler"].(plugins.ContainerScheduler))
-	clt.Datacenter.SetVmScheduler(sche["vmScheduler"].(plugins.VmScheduler))
-}
-
-func (clt *Cluster) Run() {
+func (clt *cluster) Run() {
 
 	vmCap := len(clt.Broker.GetVms())
 	vmReq := make(chan instance.Vm, vmCap)

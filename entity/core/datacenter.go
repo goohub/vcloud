@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-type Datacenter struct {
+type datacenter struct {
 	hostList           []*resource.Host
 	vmList             []*instance.Vm
 	containerList      []*instance.Container
@@ -16,7 +16,23 @@ type Datacenter struct {
 	containerScheduler plugins.ContainerScheduler
 }
 
-func (datacenter *Datacenter) Start(
+func NewDatacenter(
+	hostList []*resource.Host,
+	vmList []*instance.Vm,
+	containerList []*instance.Container,
+	vmScheduler plugins.VmScheduler,
+	containerScheduler plugins.ContainerScheduler,
+) *datacenter {
+	return &datacenter{
+		hostList,
+		vmList,
+		containerList,
+		vmScheduler,
+		containerScheduler,
+	}
+}
+
+func (datacenter *datacenter) Start(
 	vmReq chan instance.Vm, vmResp chan bool,
 	containerReq chan instance.Container, containerResp chan bool, done chan bool) {
 
@@ -26,7 +42,7 @@ func (datacenter *Datacenter) Start(
 
 }
 
-func (datacenter *Datacenter) waitInstance(vmReq chan instance.Vm, vmResp chan bool,
+func (datacenter *datacenter) waitInstance(vmReq chan instance.Vm, vmResp chan bool,
 	containerReq chan instance.Container, containerResp chan bool, done chan bool) chan bool {
 	scheduleDone := make(chan bool)
 	go func() {
@@ -57,7 +73,7 @@ func (datacenter *Datacenter) waitInstance(vmReq chan instance.Vm, vmResp chan b
 	return scheduleDone
 }
 
-func (datacenter *Datacenter) startupVm(vm instance.Vm) bool {
+func (datacenter *datacenter) startupVm(vm instance.Vm) bool {
 	hosts := datacenter.hostList
 	host, exist := datacenter.vmScheduler.SelectHostForVm(hosts, vm)
 	if !exist {
@@ -69,7 +85,7 @@ func (datacenter *Datacenter) startupVm(vm instance.Vm) bool {
 	return true
 }
 
-func (datacenter *Datacenter) buildupContainer(container instance.Container) bool {
+func (datacenter *datacenter) buildupContainer(container instance.Container) bool {
 	vms := datacenter.vmList
 	vm, exist := datacenter.containerScheduler.SelectVmForContainer(vms, container)
 	if !exist {
@@ -81,18 +97,6 @@ func (datacenter *Datacenter) buildupContainer(container instance.Container) boo
 	return true
 }
 
-func (datacenter *Datacenter) SetVmScheduler(scheduler plugins.VmScheduler) {
-	datacenter.vmScheduler = scheduler
-}
-
-func (datacenter *Datacenter) SetContainerScheduler(scheduler plugins.ContainerScheduler) {
-	datacenter.containerScheduler = scheduler
-}
-
-func (datacenter *Datacenter) getHosts() []*resource.Host {
+func (datacenter *datacenter) GetHosts() []*resource.Host {
 	return datacenter.hostList
-}
-
-func (datacenter *Datacenter) SetHosts(hosts []*resource.Host) {
-	datacenter.hostList = hosts
 }

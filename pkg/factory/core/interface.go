@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/wujunwei/vcloud/pkg/factory"
+	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 )
 
 type Interface interface {
@@ -11,10 +11,10 @@ type Interface interface {
 }
 
 type informer struct {
-	factory factory.ResourceFactory
+	factory internalinterfaces.InformerFactory
 }
 
-func New(factory factory.ResourceFactory) Interface {
+func New(factory internalinterfaces.InformerFactory) Interface {
 	return &informer{factory}
 }
 

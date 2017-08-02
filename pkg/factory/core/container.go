@@ -4,9 +4,9 @@ import (
 	"github.com/Unknwon/goconfig"
 	"github.com/wujunwei/vcloud/entity/resource/instance"
 
-	"github.com/wujunwei/vcloud/pkg/factory"
 	"log"
 	"strconv"
+	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 )
 
 type ContainerInformer interface {
@@ -14,7 +14,7 @@ type ContainerInformer interface {
 }
 
 type containerInformer struct {
-	factory factory.ResourceFactory
+	factory internalinterfaces.InformerFactory
 }
 
 func (ci *containerInformer) InstanceFor(filename string) {
@@ -25,15 +25,15 @@ func (ci *containerInformer) InstanceFor(filename string) {
 func (ci *containerInformer) generateCtnFromFile(filename string) []*instance.Container {
 	conf, err := goconfig.LoadConfigFile(filename)
 	if err != nil {
-		log.Panicf("load config file error:%s", err)
+		log.Panicf("load options file error:%s", err)
 	}
 	cltSection, err := conf.GetSection("cluster")
 	if err != nil {
-		log.Panicf("read config file error:%s", err)
+		log.Panicf("read options file error:%s", err)
 	}
 	ctnSection, err := conf.GetSection("container")
 	if err != nil {
-		log.Panicf("read config file error:%s", err)
+		log.Panicf("read options file error:%s", err)
 	}
 	mips, _ := strconv.ParseFloat(ctnSection["mips"], 64)
 	ram, _ := strconv.ParseFloat(ctnSection["ram"], 64)
@@ -41,9 +41,7 @@ func (ci *containerInformer) generateCtnFromFile(filename string) []*instance.Co
 	scale, _ := strconv.Atoi(cltSection["containers"])
 	containers := make([]*instance.Container, 0)
 	for i := 0; i < scale; i++ {
-		container := &instance.Container{}
-		container.SetId(i)
-		container.SetQuota(mips, ram, bw)
+		container := instance.NewContainer(i, mips, ram, bw)
 		containers = append(containers, container)
 	}
 	return containers

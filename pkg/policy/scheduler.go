@@ -4,22 +4,30 @@ import (
 	"github.com/wujunwei/vcloud/entity/plugins"
 )
 
-type Scheduler struct{
-	scheduler map[string]interface{}
+type Scheduler interface {
+	SchedulerFor() map[string]interface{}
 }
 
-func (sched *Scheduler) InitDefaultScheduler(){
-	if sched.scheduler ==nil{
-		sched.scheduler = make(map[string]interface{})
+type scheduler struct {
+	schedulerInfo map[string]interface{}
+}
+
+func New() Scheduler {
+	s := &scheduler{
+		schedulerInfo: make(map[string]interface{}),
 	}
-	sched.scheduler["vmScheduler"] = &plugins.VmSchedulerFirstFit{}
-	sched.scheduler["containerScheduler"] = &plugins.ContainerSchedulerFirstFit{}
+	s.initDefaultScheduler()
+	return s
 }
 
-func (sched *Scheduler)GetScheduler()map[string]interface{}{
-	return sched.scheduler
+func (sched *scheduler) initDefaultScheduler() {
+	if sched.schedulerInfo == nil {
+		sched.schedulerInfo = make(map[string]interface{})
+	}
+	sched.schedulerInfo["vmScheduler"] = &plugins.VmSchedulerFirstFit{}
+	sched.schedulerInfo["containerScheduler"] = &plugins.ContainerSchedulerFirstFit{}
 }
 
-func (sched *Scheduler)Core(){
-
+func (sched *scheduler) SchedulerFor() map[string]interface{} {
+	return sched.schedulerInfo
 }

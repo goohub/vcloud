@@ -5,9 +5,9 @@ import (
 	"github.com/wujunwei/vcloud/entity/resource/instance"
 	"github.com/wujunwei/vcloud/entity/resource/tracker"
 
-	"github.com/wujunwei/vcloud/pkg/factory"
 	"log"
 	"strconv"
+	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 )
 
 type VmInformer interface {
@@ -15,7 +15,7 @@ type VmInformer interface {
 }
 
 type vmInformer struct {
-	factory factory.ResourceFactory
+	factory internalinterfaces.InformerFactory
 }
 
 func (vi *vmInformer) InstanceFor(filename string) {
@@ -26,15 +26,15 @@ func (vi *vmInformer) InstanceFor(filename string) {
 func (vi *vmInformer) GenerateVmFromFile(filename string) []*instance.Vm {
 	conf, err := goconfig.LoadConfigFile(filename)
 	if err != nil {
-		log.Panicf("load config file error:%s", err)
+		log.Panicf("load options file error:%s", err)
 	}
 	cltSection, err := conf.GetSection("cluster")
 	if err != nil {
-		log.Panicf("read config file error:%s", err)
+		log.Panicf("read options file error:%s", err)
 	}
 	ctnSection, err := conf.GetSection("vm")
 	if err != nil {
-		log.Panicf("read config file error:%s", err)
+		log.Panicf("read options file error:%s", err)
 	}
 	mips, _ := strconv.ParseFloat(ctnSection["mips"], 64)
 	ram, _ := strconv.ParseFloat(ctnSection["ram"], 64)
@@ -42,16 +42,11 @@ func (vi *vmInformer) GenerateVmFromFile(filename string) []*instance.Vm {
 	vmNum, _ := strconv.Atoi(cltSection["vms"])
 	vms := make([]*instance.Vm, 0)
 	for i := 0; i < vmNum; i++ {
-		mipsprovider := &tracker.MipsProvisioner{}
-		mipsprovider.SetMips(mips)
-		ramprovider := &tracker.RamProvisioner{}
-		ramprovider.SetRam(ram)
-		bwprovider := &tracker.BwProvisioner{}
-		bwprovider.SetBw(bw)
+		mipsTracker := tracker.NewMipsTracker(mips, 0, nil)
+		ramTracker := tracker.NewRamTracker(ram, 0, nil)
+		bwTracker := tracker.NewBwTracker(bw, 0, nil)
 
-		vm := &instance.Vm{}
-		vm.SetId(i)
-		vm.SetProvider(mipsprovider, ramprovider, bwprovider)
+		vm := instance.NewVm(i, nil, mipsTracker, ramTracker, bwTracker)
 		vms = append(vms, vm)
 	}
 

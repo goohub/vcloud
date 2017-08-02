@@ -2,11 +2,14 @@ package cmd
 
 import(
 	"github.com/wujunwei/vcloud/entity/core"
+	"github.com/wujunwei/vcloud/cmd/options"
 )
 
 func Run(){
-	clt := &core.Cluster{}
-	clt.Init()
+	cfg := options.NewRuntimeConfig()
+
+	clt :=core.New(cfg)
 	clt.Run()
+
 }
 

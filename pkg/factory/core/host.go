@@ -4,8 +4,8 @@ import (
 	"github.com/Unknwon/goconfig"
 	"github.com/wujunwei/vcloud/entity/resource"
 	"github.com/wujunwei/vcloud/entity/resource/tracker"
-	"github.com/wujunwei/vcloud/pkg/factory"
 
+	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 	"log"
 	"strconv"
 )
@@ -15,10 +15,10 @@ type HostInformer interface {
 }
 
 type hostInformer struct {
-	factory factory.ResourceFactory
+	factory internalinterfaces.InformerFactory
 }
 
-func (hi *hostInformer) InstanceFor(filename string){
+func (hi *hostInformer) InstanceFor(filename string) {
 	hosts := hi.generateHostFromFile(filename)
 	hi.factory.InstanceFor(&resource.Host{}, hosts)
 }
@@ -26,15 +26,15 @@ func (hi *hostInformer) InstanceFor(filename string){
 func (hi *hostInformer) generateHostFromFile(filename string) []*resource.Host {
 	conf, err := goconfig.LoadConfigFile(filename)
 	if err != nil {
-		log.Panicf("load config file error:%s", err)
+		log.Panicf("load options file error:%s", err)
 	}
 	cltSection, err := conf.GetSection("cluster")
 	if err != nil {
-		log.Panicf("read config file error:%s", err)
+		log.Panicf("read options file error:%s", err)
 	}
 	ctnSection, err := conf.GetSection("host")
 	if err != nil {
-		log.Panicf("read config file error:%s", err)
+		log.Panicf("read options file error:%s", err)
 	}
 	mips, _ := strconv.ParseFloat(ctnSection["mips"], 64)
 	ram, _ := strconv.ParseFloat(ctnSection["ram"], 64)
@@ -42,16 +42,11 @@ func (hi *hostInformer) generateHostFromFile(filename string) []*resource.Host {
 	scale, _ := strconv.Atoi(cltSection["hosts"])
 	hosts := make([]*resource.Host, 0)
 	for i := 0; i < scale; i++ {
-		mipsprovider := &tracker.MipsProvisioner{}
-		mipsprovider.SetMips(mips)
-		ramprovider := &tracker.RamProvisioner{}
-		ramprovider.SetRam(ram)
-		bwprovider := &tracker.BwProvisioner{}
-		bwprovider.SetBw(bw)
+		mipTracker := tracker.NewMipsTracker(mips, 0, nil)
+		ramTracker := tracker.NewRamTracker(ram, 0, nil)
+		bwTracker := tracker.NewBwTracker(bw, 0, nil)
 
-		host := &resource.Host{}
-		host.SetId(i)
-		host.SetProvider(mipsprovider, ramprovider, bwprovider)
+		host := resource.New(i, nil, mipTracker, ramTracker, bwTracker, 0)
 		hosts = append(hosts, host)
 	}
 	return hosts

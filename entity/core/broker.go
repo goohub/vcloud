@@ -6,14 +6,28 @@ import (
 	"log"
 )
 
-type Broker struct {
+type broker struct {
 	vmList        []*instance.Vm
 	containerList []*instance.Container
 	vmAck         int
 	containerAck  int
 }
 
-func (broker *Broker) Start(
+func NewBroker(
+	vmList []*instance.Vm,
+	containerList []*instance.Container,
+	vmAck int,
+	containerAck int,
+) *broker{
+	return &broker{
+		vmList,
+		containerList,
+		vmAck,
+		containerAck,
+	}
+}
+
+func (broker *broker) Start(
 	vmReq chan instance.Vm, vmResp chan bool,
 	containerReq chan instance.Container, containerResp chan bool, done chan bool) {
 
@@ -29,7 +43,7 @@ func (broker *Broker) Start(
 	log.Print("broker.next")
 }
 
-func (broker *Broker) allocateVms(vmReq chan instance.Vm, vmResp chan bool) chan bool {
+func (broker *broker) allocateVms(vmReq chan instance.Vm, vmResp chan bool) chan bool {
 	wait := make(chan bool)
 
 	go func() {
@@ -50,7 +64,7 @@ func (broker *Broker) allocateVms(vmReq chan instance.Vm, vmResp chan bool) chan
 	return wait
 }
 
-func (broker *Broker) submitVms(vmReq chan instance.Vm) {
+func (broker *broker) submitVms(vmReq chan instance.Vm) {
 	for _, vm := range broker.vmList {
 		vmReq <- *vm
 		log.Printf("broker.vm.sending:%d", vm.GetId())
@@ -58,7 +72,7 @@ func (broker *Broker) submitVms(vmReq chan instance.Vm) {
 	close(vmReq)
 }
 
-func (broker *Broker) allocateContainers(containerReq chan instance.Container, containerResp chan bool) chan bool {
+func (broker *broker) allocateContainers(containerReq chan instance.Container, containerResp chan bool) chan bool {
 	wait := make(chan bool)
 
 	go func() {
@@ -79,7 +93,7 @@ func (broker *Broker) allocateContainers(containerReq chan instance.Container, c
 	return wait
 }
 
-func (broker *Broker) submitContainers(containerReq chan instance.Container) {
+func (broker *broker) submitContainers(containerReq chan instance.Container) {
 	for _, container := range broker.containerList {
 		containerReq <- *container
 		log.Printf("broker.container.sending:%d", container.GetId())
@@ -87,28 +101,11 @@ func (broker *Broker) submitContainers(containerReq chan instance.Container) {
 	close(containerReq)
 }
 
-func (broker *Broker) GetContainers() []*instance.Container {
+func (broker *broker) GetContainers() []*instance.Container {
 	return broker.containerList
 }
 
-func (broker *Broker) SetContainers(value interface{}) {
-	containers, err := value.([]*instance.Container)
-	if err{
-		log.Panicf("type transform err")
-	}
-	broker.containerList = containers
-	broker.containerAck = len(containers)
-}
-
-func (broker *Broker) GetVms() []*instance.Vm {
+func (broker *broker) GetVms() []*instance.Vm {
 	return broker.vmList
 }
 
-func (broker *Broker) SetVms(value interface{}) {
-	vms, err := value.([]*instance.Vm)
-	if err{
-		log.Panicf("type transform err")
-	}
-	broker.vmList = vms
-	broker.vmAck = len(vms)
-}

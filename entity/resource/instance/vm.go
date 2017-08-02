@@ -5,45 +5,50 @@ import (
 )
 
 type Vm struct {
-	id              int
-	containerList   []Container
-	mipsProvisioner *tracker.MipsProvisioner
-	ramProvisioner  *tracker.RamProvisioner
-	bwProvisioner   *tracker.BwProvisioner
+	id            int
+	containerList []Container
+	mipsTracker   tracker.MipsTracker
+	ramTracker    tracker.RamTracker
+	bwTracker     tracker.BwTracker
+}
+
+func NewVm(
+	id int,
+	containerList []Container,
+	mipsProvisioner tracker.MipsTracker,
+	ramProvisioner tracker.RamTracker,
+	bwProvisioner tracker.BwTracker) *Vm {
+	return &Vm{
+		id,
+		containerList,
+		mipsProvisioner,
+		ramProvisioner,
+		bwProvisioner,
+	}
 }
 
 func (vm *Vm) Claim(container Container) bool {
-	return vm.mipsProvisioner.Claim(container.GetMips()) &&
-		vm.ramProvisioner.Claim(container.GetRam()) &&
-		vm.bwProvisioner.Claim(container.GetBw())
+	return vm.mipsTracker.Claim(container.GetMips()) &&
+		vm.ramTracker.Claim(container.GetRam()) &&
+		vm.bwTracker.Claim(container.GetBw())
 }
 
-func (vm *Vm) LaunchInstance(container Container){
-	vm.mipsProvisioner.Allocate(container.GetId(), container.GetMips())
-	vm.ramProvisioner.Allocate(container.GetId(), container.GetRam())
-	vm.bwProvisioner.Allocate(container.GetId(), container.GetBw())
-}
-
-func (vm *Vm) SetProvider(vmMipsProvider *tracker.MipsProvisioner, vmRamProvider *tracker.RamProvisioner, vmBwProvider *tracker.BwProvisioner) {
-	vm.mipsProvisioner = vmMipsProvider
-	vm.ramProvisioner = vmRamProvider
-	vm.bwProvisioner = vmBwProvider
+func (vm *Vm) LaunchInstance(container Container) {
+	vm.mipsTracker.Allocate(container.GetId(), container.GetMips())
+	vm.ramTracker.Allocate(container.GetId(), container.GetRam())
+	vm.bwTracker.Allocate(container.GetId(), container.GetBw())
 }
 
 func (vm *Vm) GetMips() float64 {
-	return vm.mipsProvisioner.GetMips()
+	return vm.mipsTracker.GetMips()
 }
 
 func (vm *Vm) GetRam() float64 {
-	return vm.ramProvisioner.GetRam()
+	return vm.ramTracker.GetRam()
 }
 
 func (vm *Vm) GetBw() float64 {
-	return vm.bwProvisioner.GetBw()
-}
-
-func (vm *Vm) SetId(id int) {
-	vm.id = id
+	return vm.bwTracker.GetBw()
 }
 
 func (vm *Vm) GetId() int {

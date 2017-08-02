@@ -7,10 +7,17 @@ type Container struct {
 	bw   float64
 }
 
-func (container *Container) SetQuota(mips, ram, bw float64) {
-	container.mips = mips
-	container.ram = ram
-	container.bw = bw
+func NewContainer(
+	id int,
+	mips float64,
+	ram float64,
+	bw float64) *Container {
+	return &Container{
+		id,
+		mips,
+		ram,
+		bw,
+	}
 }
 
 func (container *Container) GetBw() float64 {
@@ -23,10 +30,6 @@ func (container *Container) GetRam() float64 {
 
 func (container *Container) GetMips() float64 {
 	return container.mips
-}
-
-func(container *Container) SetId(id int){
-	container.id = id
 }
 
 func(container *Container)GetId()int{

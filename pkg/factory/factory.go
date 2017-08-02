@@ -5,12 +5,12 @@ import (
 
 	"reflect"
 	"sync"
+	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 )
 
 type ResourceFactory interface {
+	internalinterfaces.InformerFactory
 	Core() core.Interface
-	InstanceFor(obj interface{}, value interface{})
-	PullInstance(obj interface{}) interface{}
 }
 
 type resourceFactory struct {
