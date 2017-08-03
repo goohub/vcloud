@@ -1,27 +1,27 @@
 package core
 
 import (
-	"github.com/wujunwei/vcloud/entity/plugins"
 	"github.com/wujunwei/vcloud/entity/resource"
 	"github.com/wujunwei/vcloud/entity/resource/instance"
 
 	"log"
+	"github.com/wujunwei/vcloud/entity/plugins/scheduler"
 )
 
 type datacenter struct {
 	hostList           []*resource.Host
 	vmList             []*instance.Vm
 	containerList      []*instance.Container
-	vmScheduler        plugins.VmScheduler
-	containerScheduler plugins.ContainerScheduler
+	vmScheduler        scheduler.VmScheduler
+	containerScheduler scheduler.ContainerScheduler
 }
 
 func NewDatacenter(
 	hostList []*resource.Host,
 	vmList []*instance.Vm,
 	containerList []*instance.Container,
-	vmScheduler plugins.VmScheduler,
-	containerScheduler plugins.ContainerScheduler,
+	vmScheduler scheduler.VmScheduler,
+	containerScheduler scheduler.ContainerScheduler,
 ) *datacenter {
 	return &datacenter{
 		hostList,

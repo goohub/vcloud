@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource/internalinterfaces"
 )
 
 type Interface interface {

@@ -4,8 +4,8 @@ import (
 	"github.com/Unknwon/goconfig"
 	"github.com/wujunwei/vcloud/entity/resource"
 	"github.com/wujunwei/vcloud/entity/resource/tracker"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource/internalinterfaces"
 
-	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 	"log"
 	"strconv"
 )

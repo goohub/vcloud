@@ -1,11 +1,11 @@
-package factory
+package resource
 
 import (
-	"github.com/wujunwei/vcloud/pkg/factory/core"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource/core"
 
 	"reflect"
 	"sync"
-	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource/internalinterfaces"
 )
 
 type ResourceFactory interface {

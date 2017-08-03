@@ -2,9 +2,10 @@ package core
 
 import (
 	"github.com/wujunwei/vcloud/cmd/options"
-	"github.com/wujunwei/vcloud/entity/plugins"
 	"github.com/wujunwei/vcloud/entity/resource"
 	"github.com/wujunwei/vcloud/entity/resource/instance"
+	"github.com/wujunwei/vcloud/pkg/provisioner/algorithm"
+	"github.com/wujunwei/vcloud/entity/plugins/scheduler"
 )
 
 type Cluster interface {
@@ -21,11 +22,10 @@ func New(cfg *options.RuntimeConfig) Cluster {
 	vms := cfg.ResourceFactory.PullInstance(&instance.Vm{}).([]*instance.Vm)
 	hosts := cfg.ResourceFactory.PullInstance(&resource.Host{}).([]*resource.Host)
 
-	schedulers := cfg.Scheduler.SchedulerFor()
-	vmScheduler := schedulers["vmScheduler"].(plugins.VmScheduler)
-	containerScheduler := schedulers["containerScheduler"].(plugins.ContainerScheduler)
+	vmScheduler := algorithm.GetScheduler(&instance.Vm{}).(scheduler.VmScheduler)
+	containerScheduler := algorithm.GetScheduler(&instance.Container{}).(scheduler.ContainerScheduler)
 
-	broker := NewBroker(vms, containers, 0, 0)
+	broker := NewBroker(vms, containers, len(vms), len(containers))
 	datacenter := NewDatacenter(hosts, nil, nil, vmScheduler, containerScheduler)
 
 	return &cluster{

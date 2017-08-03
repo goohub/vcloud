@@ -1,4 +1,4 @@
-package plugins
+package scheduler
 
 import (
 	"github.com/wujunwei/vcloud/entity/resource"
@@ -10,18 +10,22 @@ type VmScheduler interface {
 	OptimizeHost(host resource.Host) instance.Vm
 }
 
-type VmSchedulerFirstFit struct{}
+type vmSchedulerFirstFit struct{}
 
-func (ff *VmSchedulerFirstFit) SelectHostForVm(hosts []*resource.Host, vm instance.Vm) (interface{}, bool) {
+func NewVmScheduler() VmScheduler {
+	return &vmSchedulerFirstFit{}
+}
+
+func (ff *vmSchedulerFirstFit) SelectHostForVm(hosts []*resource.Host, vm instance.Vm) (interface{}, bool) {
 	for _, host := range hosts {
-		if host.Claim(vm){
+		if host.Claim(vm) {
 			return host, true
 		}
 	}
 	return nil, false
 }
 
-func (ff *VmSchedulerFirstFit) OptimizeHost(host resource.Host) instance.Vm{
-	vms :=host.GetVms()
+func (ff *vmSchedulerFirstFit) OptimizeHost(host resource.Host) instance.Vm {
+	vms := host.GetVms()
 	return vms[0]
 }

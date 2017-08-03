@@ -3,10 +3,10 @@ package core
 import (
 	"github.com/Unknwon/goconfig"
 	"github.com/wujunwei/vcloud/entity/resource/instance"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource/internalinterfaces"
 
 	"log"
 	"strconv"
-	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 )
 
 type ContainerInformer interface {
@@ -17,12 +17,12 @@ type containerInformer struct {
 	factory internalinterfaces.InformerFactory
 }
 
-func (ci *containerInformer) InstanceFor(filename string) {
-	containers := ci.generateCtnFromFile(filename)
-	ci.factory.InstanceFor(&instance.Container{}, containers)
+func (f *containerInformer) InstanceFor(filename string) {
+	containers := f.generateCtnFromFile(filename)
+	f.factory.InstanceFor(&instance.Container{}, containers)
 }
 
-func (ci *containerInformer) generateCtnFromFile(filename string) []*instance.Container {
+func (f *containerInformer) generateCtnFromFile(filename string) []*instance.Container {
 	conf, err := goconfig.LoadConfigFile(filename)
 	if err != nil {
 		log.Panicf("load options file error:%s", err)

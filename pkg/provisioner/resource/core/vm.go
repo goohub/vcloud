@@ -4,10 +4,10 @@ import (
 	"github.com/Unknwon/goconfig"
 	"github.com/wujunwei/vcloud/entity/resource/instance"
 	"github.com/wujunwei/vcloud/entity/resource/tracker"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource/internalinterfaces"
 
 	"log"
 	"strconv"
-	"github.com/wujunwei/vcloud/pkg/factory/internalinterfaces"
 )
 
 type VmInformer interface {

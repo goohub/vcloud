@@ -1,13 +1,11 @@
 package options
 
 import (
-	"github.com/wujunwei/vcloud/pkg/factory"
-	"github.com/wujunwei/vcloud/pkg/policy"
+	"github.com/wujunwei/vcloud/pkg/provisioner/resource"
 )
 
 type RuntimeConfig struct {
-	ResourceFactory factory.ResourceFactory
-	Scheduler       policy.Scheduler
+	ResourceFactory resource.ResourceFactory
 }
 
 func (rc *RuntimeConfig) instantiate() {
@@ -19,12 +17,10 @@ func (rc *RuntimeConfig) instantiate() {
 }
 
 func NewRuntimeConfig() *RuntimeConfig {
-	factory := factory.New()
-	scheduler := policy.New()
+	factory := resource.New()
 
 	rc := &RuntimeConfig{
 		factory,
-		scheduler,
 	}
 	rc.instantiate()
 	return rc
